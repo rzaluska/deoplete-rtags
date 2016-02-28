@@ -1,4 +1,5 @@
 # deoplete-rtags
+Deoplete external source for c/c++/objc[++] using rtags.
 
 Use [deoplete.nvim](https://github.com/Shougo/deoplete.nvim) asynchronous
 autocompletion together with [rtags](https://github.com/Andersbakken/rtags)
@@ -6,6 +7,11 @@ symbols database.
 
 ### Current project status:
 **Proof of concept** :boom:
+
+## requrements
+- [neovim](https://github.com/neovim/neovim)
+- [deoplete.nvim](https://github.com/Shougo/deoplete.nvim)
+- [rtags](https://github.com/Andersbakken/rtags)
 
 ## recomended setup
 - Make sure your project is [CMake](https://github.com/Kitware/CMake) driven
@@ -35,6 +41,15 @@ rc -J your/build/directory
 Sugesstions will pop up automatically thanks to
 [deoplete.nvim](https://github.com/Shougo/deoplete.nvim).
 
+## aim of project
+- create [CMake](https://github.com/Kitware/CMake) compatibile autocompletion
+solution for neovim
+- use client-server architecture based on rtags
+- provide sugestions as you type with help of deoplete
+
+
 ## related plugins
-[vim-rtags](https://github.com/lyuts/vim-rtags) - you can use this plugin to
+- [vim-rtags](https://github.com/lyuts/vim-rtags) - you can use this plugin to
 browse your codebase using rtags
+- [deoplete-clang](https://github.com/zchee/deoplete-clang) - orginal
+inspiration and reference implementation
