@@ -1,4 +1,3 @@
-import os
 import re
 from subprocess import Popen, PIPE
 
@@ -40,17 +39,15 @@ class Source(Base):
         f.write("Offset: " + str(offset) + "\n")
 
         command = self.get_rc_command(buf.name, line, col, len(text))
-        p = Popen(
-            command,
-            stdout=PIPE,
-            stdin=PIPE,
-            stderr=PIPE)
-        stdout_data = p.communicate(
-            input=text.encode("utf-8"))[0].decode("utf-8")
+        p = Popen(command, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        stdout_data, stderr_data = p.communicate(input=text.encode("utf-8"))
         f.write("Answer: " + str(stdout_data) + "\n")
         re_compiled = re.compile(r".*CDATA\[ (.*?)\]\]><\/completions>",
                                  re.DOTALL)
-        clean_answear = re.search(re_compiled, stdout_data).group(1).strip()
+        re_result = re.search(re_compiled, stdout_data)
+        if not re_result:
+            return []
+        clean_answear = re_result.group(1).strip()
         completions = []
         for line in clean_answear.split("\n"):
             line_split = line.strip().split(" ")
