@@ -46,6 +46,7 @@ Sugesstions will pop up automatically thanks to
 solution for neovim
 - use client-server architecture based on rtags
 - provide sugestions as you type with help of deoplete
+- create zero configuration plugin that will just work for any CMake project
 
 
 ## related plugins
