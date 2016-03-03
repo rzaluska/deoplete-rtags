@@ -9,12 +9,12 @@ current = __file__
 class Source(Base):
     def __init__(self, vim):
         Base.__init__(self, vim)
-
         self.name = 'rtags'
         self.mark = '[rtags]'
         self.filetypes = ['c', 'cpp', 'objc', 'objcpp']
         self.rank = 500
         self.is_bytepos = True
+        self.min_pattern_length = 1
         self.input_pattern = (r'[^. \t0-9]\.\w*|'
                               r'[^. \t0-9]->\w*|'
                               r'[a-zA-Z_]\w*::\w*')
@@ -58,9 +58,16 @@ class Source(Base):
             completion['kind'] = "[" + line_split[-3] + "]"
             if completion['kind'] == "[CXXMethod]":
                 if line_split[-4] == "const":
-                    completion['word'] = " ".join(line_split[2:-4])
+                    if line_split[2] == "*":
+                        completion['word'] = " ".join(line_split[3:-4])
+                    else:
+                        completion['word'] = " ".join(line_split[2:-4])
                 else:
-                    completion['word'] = " ".join(line_split[2:-3])
+                    if line_split[2] == "*":
+                        completion['word'] = " ".join(line_split[3:-3])
+                    else:
+                        completion['word'] = " ".join(line_split[2:-3])
+                completion['menu'] = line_split[1]
             else:
                 completion['word'] = line_split[0]
             completions.append(completion)
