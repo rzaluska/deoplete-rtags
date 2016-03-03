@@ -41,6 +41,7 @@ class Source(Base):
         command = self.get_rc_command(buf.name, line, col, len(text))
         p = Popen(command, stdout=PIPE, stdin=PIPE, stderr=PIPE)
         stdout_data, stderr_data = p.communicate(input=text.encode("utf-8"))
+        stdout_data = stdout_data.decode("utf-8")
         f.write("Answer: " + str(stdout_data) + "\n")
         re_compiled = re.compile(r".*CDATA\[ (.*?)\]\]><\/completions>",
                                  re.DOTALL)
