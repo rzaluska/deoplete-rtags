@@ -53,19 +53,19 @@ class Source(Base):
                 continue
             completion = {'dup': 1}
             completion['kind'] = "[" + line_split[-3] + "]"
-            self.debug("Answer: " + str(line_split) + "\n")
             if completion['kind'] == "[CXXMethod]":
+                self.debug("Answer: " + str(line_split) + "\n")
                 if line_split[-4] == "const":
                     if line_split[2] == "*" or line_split[2] == "&":
-                        completion['menu'] = " ".join(line_split[3:-4])
+                        completion['word'] = " ".join(line_split[3:-4])
                     else:
-                        completion['menu'] = " ".join(line_split[2:-4])
+                        completion['word'] = " ".join(line_split[2:-4])
                 else:
                     if line_split[2] == "*" or line_split[2] == "&":
-                        completion['menu'] = " ".join(line_split[3:-3])
+                        completion['word'] = " ".join(line_split[3:-3])
                     else:
-                        completion['menu'] = " ".join(line_split[2:-3])
-                completion['word'] = line_split[0] + "("
+                        completion['word'] = " ".join(line_split[2:-3])
+                completion['menu'] = line_split[1]
             elif completion['kind'] == "[FieldDecl]":
                 completion['word'] = line_split[0]
                 completion['menu'] = line_split[-5]
