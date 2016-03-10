@@ -18,31 +18,29 @@ class Source(Base):
         self.input_pattern = (r'[^. \t0-9]\.\w*|'
                               r'[^. \t0-9]->\w*|'
                               r'[a-zA-Z_]\w*::\w*')
+        self.debug("Plugin Started")
 
     def get_complete_position(self, context):
         m = re.search(r'\w*$', context['input'])
         return m.start() if m else -1
 
     def gather_candidates(self, context):
-        f = open("/tmp/deoplete-rtags.log", "a")
-        f.write("GatherCandidates\n")
-        f.write(str(context) + "\n")
+        self.debug("GatherCandidates\n")
         line = context['position'][1]
-        f.write("Line: " + str(line) + "\n")
+        self.debug("Line: " + str(line) + "\n")
         col = (context['complete_position'] + 1)
-        f.write("Col: " + str(col) + "\n")
+        self.debug("Col: " + str(col) + "\n")
         buf = self.vim.current.buffer
-        f.write("Buf: " + str(buf.name) + "\n")
+        self.debug("Buf: " + str(buf.name) + "\n")
         text = "\n".join(buf[0:line])
-        f.write("Text:\n" + str(text) + "\n")
+        self.debug("Text:\n" + str(text) + "\n")
         offset = len(text.encode("utf-8"))
-        f.write("Offset: " + str(offset) + "\n")
+        self.debug("Offset: " + str(offset) + "\n")
 
         command = self.get_rc_command(buf.name, line, col, len(text))
         p = Popen(command, stdout=PIPE, stdin=PIPE, stderr=PIPE)
         stdout_data, stderr_data = p.communicate(input=text.encode("utf-8"))
         stdout_data = stdout_data.decode("utf-8")
-        f.write("Answer: " + str(stdout_data) + "\n")
         re_compiled = re.compile(r".*CDATA\[ (.*?)\]\]><\/completions>",
                                  re.DOTALL)
         re_result = re.search(re_compiled, stdout_data)
@@ -52,12 +50,12 @@ class Source(Base):
         completions = []
         for line in clean_answear.split("\n"):
             line_split = line.strip().split(" ")
-            f.write("Answer: " + str(line_split) + "\n")
             if len(line_split) < 6:
                 continue
             completion = {'dup': 1}
             completion['kind'] = "[" + line_split[-3] + "]"
             if completion['kind'] == "[CXXMethod]":
+                self.debug("Answer: " + str(line_split) + "\n")
                 if line_split[-4] == "const":
                     if line_split[2] == "*":
                         completion['word'] = " ".join(line_split[3:-4])
@@ -73,7 +71,6 @@ class Source(Base):
                 completion['word'] = line_split[0]
             completions.append(completion)
 
-        f.close()
         return completions
 
     def get_rc_command(self, file_name, line, column, offset):
