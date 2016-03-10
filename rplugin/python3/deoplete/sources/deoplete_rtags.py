@@ -33,7 +33,6 @@ class Source(Base):
         buf = self.vim.current.buffer
         self.debug("Buf: " + str(buf.name) + "\n")
         text = "\n".join(buf[0:line])
-        self.debug("Text:\n" + str(text) + "\n")
         offset = len(text.encode("utf-8"))
         self.debug("Offset: " + str(offset) + "\n")
 
@@ -54,19 +53,22 @@ class Source(Base):
                 continue
             completion = {'dup': 1}
             completion['kind'] = "[" + line_split[-3] + "]"
+            self.debug("Answer: " + str(line_split) + "\n")
             if completion['kind'] == "[CXXMethod]":
-                self.debug("Answer: " + str(line_split) + "\n")
                 if line_split[-4] == "const":
-                    if line_split[2] == "*":
-                        completion['word'] = " ".join(line_split[3:-4])
+                    if line_split[2] == "*" or line_split[2] == "&":
+                        completion['menu'] = " ".join(line_split[3:-4])
                     else:
-                        completion['word'] = " ".join(line_split[2:-4])
+                        completion['menu'] = " ".join(line_split[2:-4])
                 else:
-                    if line_split[2] == "*":
-                        completion['word'] = " ".join(line_split[3:-3])
+                    if line_split[2] == "*" or line_split[2] == "&":
+                        completion['menu'] = " ".join(line_split[3:-3])
                     else:
-                        completion['word'] = " ".join(line_split[2:-3])
-                completion['menu'] = line_split[1]
+                        completion['menu'] = " ".join(line_split[2:-3])
+                completion['word'] = line_split[0] + "("
+            elif completion['kind'] == "[FieldDecl]":
+                completion['word'] = line_split[0]
+                completion['menu'] = line_split[-5]
             else:
                 completion['word'] = line_split[0]
             completions.append(completion)
