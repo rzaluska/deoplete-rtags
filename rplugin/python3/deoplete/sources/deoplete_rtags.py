@@ -18,7 +18,6 @@ class Source(Base):
         self.input_pattern = (r'[^. \t0-9]\.\w*|'
                               r'[^. \t0-9]->\w*|'
                               r'[a-zA-Z_]\w*::\w*')
-        self.debug("Plugin Started")
 
     def get_complete_position(self, context):
         m = re.search(r'\w*$', context['input'])
