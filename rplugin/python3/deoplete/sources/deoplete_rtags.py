@@ -48,8 +48,6 @@ class Source(Base):
         completions = []
         for line in clean_answear.split("\n"):
             line_split = line.strip().split(" ")
-            if len(line_split) < 6:
-                continue
             completion = {'dup': 1}
             completion['kind'] = "[" + line_split[-3] + "]"
             if completion['kind'] == "[CXXMethod]":
