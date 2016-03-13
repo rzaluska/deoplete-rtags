@@ -47,32 +47,65 @@ class Source(Base):
         clean_answear = re_result.group(1).strip()
         completions = []
         for line in clean_answear.split("\n"):
-            line_split = line.strip().split(" ")
             completion = {'dup': 1}
-            completion['kind'] = "[" + line_split[-3] + "]"
-            if completion['kind'] == "[CXXMethod]":
+            line_split = line.strip().split(" ")
+            if line_split[-1] == "FunctionDecl":
+                # C style function declaration
+                index_of_first_bracket = 0
+                for index, item in enumerate(line_split[0:-1]):
+                    if "(" in item:
+                        index_of_first_bracket = index
+                        break
+                function_arguments = line_split[index_of_first_bracket:-1]
+                return_type = line_split[1:index_of_first_bracket]
+                completion['kind'] = "[Function]"
+                completion['word'] = " ".join(function_arguments)
+                completion['menu'] = " ".join(return_type) + " " + " ".join(
+                    function_arguments)
+            elif line_split[-1] == "TypedefDecl":
+                completion['word'] = line_split[0]
+                completion['kind'] = "[Typedef]"
+            elif line_split[-1] == "NotImplemented":
+                completion['word'] = line_split[0]
+                completion['kind'] = "[Keyword]"
+            elif line_split[-1] == "VarDecl":
+                completion['word'] = line_split[0]
+                completion['kind'] = "[Variable]"
+                completion['menu'] = " ".join(line_split[1:-1])
+            elif " ".join(line_split[-2:]) == "macro definition":
+                completion['word'] = line_split[0]
+                completion['kind'] = "[Macro]"
+            elif line_split[-1] == "FieldDecl":
+                completion['word'] = line_split[0]
+                completion['kind'] = "[StructField]"
+                completion['menu'] = " ".join(line_split[1:-1])
                 self.debug("Answer: " + str(line_split) + "\n")
-                if line_split[-4] == "const":
-                    if line_split[2] == "*" or line_split[2] == "&":
-                        completion['word'] = " ".join(line_split[3:-4])
-                    else:
-                        completion['word'] = " ".join(line_split[2:-4])
-                else:
-                    if line_split[2] == "*" or line_split[2] == "&":
-                        completion['word'] = " ".join(line_split[3:-3])
-                    else:
-                        completion['word'] = " ".join(line_split[2:-3])
-                completion['menu'] = line_split[1]
-            elif completion['kind'] == "[FieldDecl]":
-                completion['word'] = line_split[0]
-                completion['menu'] = line_split[-5]
             else:
-                completion['word'] = line_split[0]
+                # TODO integrate with upper code
+                completion['kind'] = "[" + line_split[-3] + "]"
+                if completion['kind'] == "[CXXMethod]":
+                    if line_split[-4] == "const":
+                        if line_split[2] == "*" or line_split[2] == "&":
+                            completion['word'] = " ".join(line_split[3:-4])
+                        else:
+                            completion['word'] = " ".join(line_split[2:-4])
+                    else:
+                        if line_split[2] == "*" or line_split[2] == "&":
+                            completion['word'] = " ".join(line_split[3:-3])
+                        else:
+                            completion['word'] = " ".join(line_split[2:-3])
+                    completion['menu'] = line_split[1]
+                elif completion['kind'] == "[FieldDecl]":
+                    completion['word'] = line_split[0]
+                    completion['menu'] = line_split[-5]
+                else:
+                    completion['word'] = line_split[0]
             completions.append(completion)
 
         return completions
 
     def get_rc_command(self, file_name, line, column, offset):
+        # TODO change string to table
         command = "rc --absolute-path --synchronous-completions"
         command += " -l {filename}:{line}:{column}"
         command += " --unsaved-file={filename}:{offset}"
