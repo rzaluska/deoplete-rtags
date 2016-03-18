@@ -31,55 +31,51 @@ class Source(Base):
         buf = self.vim.current.buffer
         buf_name = buf.name
         buf = buf[0:line]
-        buf[-1] = buf[-1][0:col-1]
+        buf[-1] = buf[-1][0:col]
         text = "\n".join(buf)
 
         command = self.get_rc_command(buf_name, line, col, len(text))
         p = Popen(command, stdout=PIPE, stdin=PIPE, stderr=PIPE)
         stdout_data, stderr_data = p.communicate(input=text.encode("utf-8"))
-        stdout_data = stdout_data.decode("utf-8")
-        if not stdout_data:
+        if stdout_data.decode("utf-8") == "":
             return []
+        completions_json = json.loads(stdout_data.decode("utf-8"))
         completions = []
-        for line in stdout_data.split("\n"):
-            try:
-                json_completion = json.loads(line)
-                completion = {'dup': 1}
-                if json_completion['k'] == "VarDecl":
-                    completion['abbr'] = "[V] " + json_completion['c']
-                    completion['word'] = json_completion['c']
-                    completion['kind'] = " ".join(json_completion['s'].split(" ")[:-1])
-                    completion['menu'] = json_completion['comm']
-                elif json_completion['k'] == "ParmDecl":
-                    completion['kind'] = " ".join(json_completion['s'].split(" ")[:-1])
-                    completion['word'] = json_completion['c']
-                    completion['abbr'] = "[P] " + json_completion['c']
-                    completion['menu'] = json_completion['comm']
-                elif json_completion['k'] == "FieldDecl":
-                    completion['kind'] = " ".join(json_completion['s'].split(" ")[:-1])
-                    completion['word'] = json_completion['c']
-                    completion['abbr'] = "[S] " + json_completion['c']
-                    completion['menu'] = json_completion['comm']
-                elif json_completion['k'] == "FunctionDecl":
-                    completion['kind'] = json_completion['s']
-                    completion['word'] = json_completion['c'] + "("
-                    completion['abbr'] = "[F] " + json_completion['c'] + "("
-                    completion['menu'] = json_completion['comm']
-                elif json_completion['k'] == "CXXMethod":
-                    completion['kind'] = json_completion['s']
-                    completion['word'] = json_completion['c'] + "("
-                    completion['abbr'] = "[M] " + json_completion['c'] + "("
-                    completion['menu'] = json_completion['comm']
-                elif json_completion['k'] == "NotImplemented":
-                    completion['word'] = json_completion['c']
-                    completion['abbr'] = "[K] " + json_completion['c']
-                else:
-                    completion['word'] = json_completion['c']
-                    completion['menu'] = json_completion['comm']
-                    completion['kind'] = json_completion['k']
-                completions.append(completion)
-            except:
-                pass
+        for raw_completion in completions_json:
+            completion = {'dup': 1}
+            if raw_completion['k'] == "VarDecl":
+                completion['abbr'] = "[V] " + raw_completion['c']
+                completion['word'] = raw_completion['c']
+                completion['kind'] = raw_completion['k']
+                completion['menu'] = raw_completion['comm']
+            elif raw_completion['k'] == "ParmDecl":
+                completion['kind'] = " ".join(raw_completion['s'].split(" ")[:-1])
+                completion['word'] = raw_completion['c']
+                completion['abbr'] = "[P] " + raw_completion['c']
+                completion['menu'] = raw_completion['comm']
+            elif raw_completion['k'] == "FieldDecl":
+                completion['kind'] = " ".join(raw_completion['s'].split(" ")[:-1])
+                completion['word'] = raw_completion['c']
+                completion['abbr'] = "[S] " + raw_completion['c']
+                completion['menu'] = raw_completion['comm']
+            elif raw_completion['k'] == "FunctionDecl":
+                completion['kind'] = raw_completion['s']
+                completion['word'] = raw_completion['c'] + "("
+                completion['abbr'] = "[F] " + raw_completion['c'] + "("
+                completion['menu'] = raw_completion['comm']
+            elif raw_completion['k'] == "CXXMethod":
+                completion['kind'] = raw_completion['s']
+                completion['word'] = raw_completion['c'] + "("
+                completion['abbr'] = "[M] " + raw_completion['c'] + "("
+                completion['menu'] = raw_completion['comm']
+            elif raw_completion['k'] == "NotImplemented":
+                completion['word'] = raw_completion['c']
+                completion['abbr'] = "[K] " + raw_completion['c']
+            else:
+                completion['word'] = raw_completion['c']
+                completion['menu'] = raw_completion['comm']
+                completion['kind'] = raw_completion['k']
+            completions.append(completion)
 
         return completions
 
