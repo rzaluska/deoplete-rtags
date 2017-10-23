@@ -3,7 +3,7 @@ import json
 from pprint import pprint
 from subprocess import Popen, PIPE
 
-from deoplete.sources.base import Base
+from deoplete.source.base import Base
 
 current = __file__
 
