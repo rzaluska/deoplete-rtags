@@ -38,9 +38,10 @@ class Source(Base):
         p = Popen(command, stdout=PIPE, stdin=PIPE, stderr=PIPE)
         stdout_data, stderr_data = p.communicate(input=text.encode("utf-8"))
 
-        if stdout_data.decode("utf-8") == "":
+        stdout_data_decoded = stdout_data.decode("utf-8", 'ignore')  
+        if stdout_data_decoded == "":
             return []
-        completions_json = json.loads(stdout_data.decode("utf-8"))
+        completions_json = json.loads(stdout_data_decoded)
         completions = []
         for raw_completion in completions_json['completions']:
             completion = {'dup': 1}
